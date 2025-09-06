@@ -72,27 +72,75 @@ interface Mapping {
 }
 
 interface LightIdCheckProps {
-    // URL path to face-api models (relative to site root)
+    /**
+     * URL path to face-api.js models (relative to site root)
+     * @default '/models'
+     * @type {string}
+     * @memberof LightIdCheckProps
+     */
     faceModelsUrl?: string;
-    // URL path to OpenCV.js (relative to site root)
+    /**
+     * URL path to OpenCV.js (relative to site root)
+     * @default '/opencv/opencv.js'
+     * @type {string}
+     * @memberof LightIdCheckProps
+     */
     opencvUrl?: string;
 
-    //Open Overlay
+    /**
+     * Whether the LightIdCheck overlay is open
+     * @default false
+     * @type {boolean}
+     * @memberof LightIdCheckProps
+     */
     isOpen?: boolean;
 
-    // Initial overlay mode
+    /**
+     * Initial overlay mode (face/card)
+     * @default 'face'
+     * @type {OverlayMode}
+     * @memberof LightIdCheckProps
+     */
     initialOverlay?: OverlayMode;
 
-    // Callback when capture is taken (dataUrl is JPEG base64)
+    /**
+     * Callback when capture is done or cancelled
+     * @param dataUrl - JPEG data URL of captured image, or null if capture was cancelled
+     * @returns 
+     * @memberof LightIdCheckProps
+     */
     onCapture: (dataUrl: string | null) => void;
 
-    //Automatic capture after detection (for testing/demo)
+    /**
+     * Whether to auto-capture when detection is OK
+     * @default true
+     * @type {boolean}
+     * @memberof LightIdCheckProps
+     */
     autoCapture?: boolean;
+
+    /**
+     * Delay in ms after detection is OK before auto-capturing (default: 2000)
+     * Set to 0 for immediate capture
+     * @default 2000
+     * @type {number}
+     * @memberof LightIdCheckProps
+     */
     autoCaptureDelayMs?: number;
 
-    // Optional className for the outer container
+    /**
+     * Additional class name(s) for the root element
+     * @type {string}
+     * @memberof LightIdCheckProps
+     */
     className?: string;
 
+    /**
+     * Enable debug mode (shows overlay controls)
+     * @default false
+     * @type {boolean}
+     * @memberof LightIdCheckProps
+     */
     debug?: boolean; // show overlay
 }
 
