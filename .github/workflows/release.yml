@@ -22,6 +22,11 @@ jobs:
           registry-url: 'https://npm.pkg.github.com/'
           always-auth: true
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+          run_install: false
+
       - name: Bump major version in package.json
         id: bump
         run: |
@@ -38,7 +43,7 @@ jobs:
         run: |
           git config user.email "action@github.com"
           git config user.name  "GitHub Action"
-          git add package.json package-lock.json || true
+          git add package.json pnpm-lock.yaml || true
           git commit -m "chore(release): bump major to v${{ steps.bump.outputs.version }}" || echo "No changes"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git push origin HEAD:master
@@ -59,9 +64,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Publish to GitHub Packages
-        run: npm publish --access public
+        run: pnpm publish --access public --no-git-checks --registry=https://npm.pkg.github.com/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
