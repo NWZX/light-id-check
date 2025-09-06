@@ -19,16 +19,19 @@ export default defineConfig({
     },
     build: {
         lib: {
-            entry: resolve(__dirname, 'lib/main.ts'),
-            formats: ['es'],
+          entry: resolve(__dirname, 'lib/main.ts'),
+          name: 'LightIdCheck',
+          fileName: (format) => (format === 'es' ? 'main.js' : 'main.cjs'),
+            formats: ['es', 'cjs'],
         },
         rollupOptions: {
             external: [
-                'react',
-                'react/jsx-runtime',
-                'tailwindcss',
-                '@tensorflow/tfjs',
-                'face-api.js',
+              'react',
+              'react-dom',
+              'react/jsx-runtime',
+              'tailwindcss',
+              '@tensorflow/tfjs',
+              'face-api.js',
             ],
         },
         sourcemap: true,
