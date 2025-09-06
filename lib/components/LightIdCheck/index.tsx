@@ -145,10 +145,24 @@ export function LightIdCheck({
         setIsStreaming(false);
     }, []);
 
-    const close = useCallback(() => {
+    const close = useCallback((data: string | null) => {
+        // Stop stream
         stopStream();
-        if (onCapture) onCapture(null); // signal closed without capture
-    }, [onCapture, stopStream]);
+
+        //Reset all state
+        setError(null);
+        setCapturePending(false);
+        faceModelsLoadedRef.current = false;
+        lastFaceBoxRef.current = null;
+        faceInsideRef.current = false;
+        cardOkRef.current = false;
+        mappingRef.current = null;
+        overlayRef.current = initialOverlay;
+        setOverlay(initialOverlay);
+
+        // Callback
+        if (onCapture) onCapture(data); // signal closed without capture
+    }, [initialOverlay, onCapture, stopStream]);
 
     const ensureFaceModels = useCallback(async (modelsUrl = '/models') => {
         if (faceModelsLoadedRef.current) return;
@@ -275,7 +289,7 @@ export function LightIdCheck({
         ctx.drawImage(video, dx, dy, dw, dh);
 
         const dataUrl = off.toDataURL('image/jpeg', 0.95);
-        if (onCapture) onCapture(dataUrl);
+        close(dataUrl);
 
         // For demo purposes, open in new window
         // In real use, you would probably want to upload the dataUrl to a server
@@ -284,7 +298,7 @@ export function LightIdCheck({
         //     win.document.write(
         //         `<img src="${dataUrl}" style="width:100%;height:auto"/>`
         //     );
-    }, [onCapture]);
+    }, []);
 
     // === DETECTION LOOP ===
     const detectionTick = useCallback(async () => {
@@ -456,7 +470,7 @@ export function LightIdCheck({
                     <div className="absolute top-0 right-0 left-0 z-10 flex items-center justify-between px-4 py-3 text-white/95">
                         <div className="flex items-center gap-2">
                             <button
-                                onClick={close}
+                                onClick={() => close(null)}
                                 className="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur"
                             >
                                 Close
