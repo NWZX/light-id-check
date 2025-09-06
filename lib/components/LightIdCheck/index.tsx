@@ -92,6 +92,8 @@ interface LightIdCheckProps {
 
     // Optional className for the outer container
     className?: string;
+
+    debug?: boolean; // show overlay
 }
 
 export function LightIdCheck({
@@ -100,8 +102,9 @@ export function LightIdCheck({
     isOpen = false,
     initialOverlay = 'face',
     onCapture,
-    autoCapture = false,
-    autoCaptureDelayMs = 5000,
+    autoCapture = true,
+    autoCaptureDelayMs = 2000,
+    debug = false,
     className,
 }: LightIdCheckProps) {
     // State
@@ -467,16 +470,17 @@ export function LightIdCheck({
                     }}
                 >
                     {/* Top bar */}
-                    <div className="absolute top-0 right-0 left-0 z-10 flex items-center justify-between px-4 py-3 text-white/95">
+                    <div className={"absolute top-0 right-0 left-0 z-10 flex items-center justify-between px-4 py-3 text-white/95"}>
                         <div className="flex items-center gap-2">
                             <button
+                                type='button'
                                 onClick={() => close(null)}
                                 className="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur"
                             >
                                 Close
                             </button>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className={"flex items-center gap-2" + (debug ? ' visible' : ' invisible')}>
                             <Segmented
                                 value={overlay}
                                 onChange={setOverlay}
@@ -486,6 +490,7 @@ export function LightIdCheck({
                                 ]}
                             />
                             <button
+                                type='button'
                                 onClick={capture}
                                 disabled={!isStreaming}
                                 className="rounded-xl border border-white/20 bg-blue-600 px-3 py-1.5 text-white disabled:opacity-50"
@@ -537,6 +542,7 @@ function Segmented<T extends string>({
         <div className="flex overflow-hidden rounded-xl border border-white/20 bg-white/10 backdrop-blur">
             {options.map((opt) => (
                 <button
+                    type='button'
                     key={opt.value}
                     onClick={() => onChange(opt.value)}
                     className={`px-3 py-1.5 text-sm ${value === opt.value ? 'bg-white text-black' : 'text-white/90'}`}
