@@ -1,5 +1,5 @@
 {
-    "name": "light-id-check",
+    "name": "@nwzx/light-id-check",
     "version": "0.0.0",
     "type": "module",
     "main": "dist/main.js",
