@@ -1,0 +1,25 @@
+name: Automated Tagging
+on:
+  push:
+    branches:
+      - master
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Create Tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${{ github.run_number }}" -m "Release v${{ github.run_number }}"
+          git push origin "v${{ github.run_number }}"
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+            tag_name: 'v${{ github.run_number }}'
+            release_name: 'Release v${{ github.run_number }}'
+            body: 'Description of the changes in this release'
