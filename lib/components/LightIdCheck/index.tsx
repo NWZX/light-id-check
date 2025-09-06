@@ -376,7 +376,11 @@ export function LightIdCheck({
             if (ok) {
                 setCapturePending(true);
                 setTimeout(() => {
-                    capture();
+                    if (overlayRef.current === 'face'
+                        ? faceInsideRef.current
+                        : cardOkRef.current) {
+                        capture();
+                    }
                     setCapturePending(false);
                 }, autoCaptureDelayMs);
             }
