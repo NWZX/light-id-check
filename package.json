@@ -1,9 +1,15 @@
 {
     "name": "light-id-check",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "type": "module",
     "main": "dist/main.js",
     "types": "dist/main.d.ts",
+    "license": "Apache-2.0",
+    "author": {
+        "name": "NWZX"
+    },
+    "description": "A test, ID card recognition library based on React, TensorFlow.js, face-api.js, OpenCV.js, compreFace and Tesseract.js.",
+    "repository": "https://github.com/NWZX/light-id-check.git",
     "files": [
         "dist"
     ],
