@@ -385,7 +385,7 @@ export function LightIdCheck({
                 }, autoCaptureDelayMs);
             }
         }
-    }, [autoCapture, autoCaptureDelayMs, capture, capturePending, opencvUrl]);
+    }, [autoCapture, autoCaptureDelayMs, opencvUrl]);
 
     const start = useCallback(async () => {
         setError(null);
@@ -432,7 +432,7 @@ export function LightIdCheck({
             );
             setIsStreaming(false);
         }
-    }, [detectionTick, draw, ensureFaceModels, faceModelsUrl]);
+    }, [ensureFaceModels, faceModelsUrl]);
 
     useEffect(() => {
         if (!isOpen) return;
