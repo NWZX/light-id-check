@@ -1,0 +1,1 @@
+export { LightIdCheck } from './components/LightIdCheck';
