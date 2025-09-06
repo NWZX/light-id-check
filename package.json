@@ -1,6 +1,6 @@
 {
     "name": "@nwzx/light-id-check",
-    "version": "6.0.0",
+    "version": "7.0.0",
     "type": "module",
     "main": "dist/main.cjs",
     "module": "dist/main.js",
