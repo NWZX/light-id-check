@@ -1,0 +1,592 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "path": "b6ff6326-29f0-4bf2-83a5-cf44c89c1950",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2.1,
+            "position": [-144, 272],
+            "id": "d04adb17-4ee2-4318-8729-4edd9f9a362d",
+            "name": "Webhook",
+            "webhookId": "b6ff6326-29f0-4bf2-83a5-cf44c89c1950"
+        },
+        {
+            "parameters": {
+                "url": "={{ $json.selfieWithIdDocumentFile }}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "file",
+                            "outputPropertyName": "self_data"
+                        }
+                    }
+                }
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [368, 560],
+            "id": "914b413f-dc87-452d-90f9-9eca1b496489",
+            "name": "Download Selfie Image"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [3360, 528],
+            "id": "f07c8fa1-6c25-447e-a935-31600e2f1bf6",
+            "name": "Send Result",
+            "disabled": true
+        },
+        {
+            "parameters": {
+                "url": "={{ $json.idDocumentFile }}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "file",
+                            "outputPropertyName": "id_data"
+                        }
+                    }
+                }
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [368, 272],
+            "id": "12c031c9-51ee-4910-9a55-8e25124b08ab",
+            "name": "Download Identity Image"
+        },
+        {
+            "parameters": {
+                "modelId": {
+                    "__rl": true,
+                    "value": "gpt-4o",
+                    "mode": "list",
+                    "cachedResultName": "GPT-4O"
+                },
+                "messages": {
+                    "values": [
+                        {
+                            "content": "=Clean this OCR result from ID document and extract essential info to json :\n\n{{ $json.idDocumentOCR }}"
+                        }
+                    ]
+                },
+                "jsonOutput": true,
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.openAi",
+            "typeVersion": 1.8,
+            "position": [256, 48],
+            "id": "3891203d-4e6e-4786-9909-af6dd60e2a06",
+            "name": "Clean OCR Result",
+            "credentials": {
+                "openAiApi": {
+                    "id": "d1nusMjJ5jKyPtEq",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=Always give a trust score 0-1 base on confidance in autenticity and validity of data.\n\nFILE OCR:\n{{ $json.message.toJsonString() }}\n\nFILE METADATA:\n{{ $json.metadata.toJsonString() }}\n\nCurrent Date: {{ $now }}\nRule:\n- Total score <= -0.5 will always result to trust of 0.\n- OCR show that name do not have number, invalid caracter and doe not seem suspicious (-0.5 if not).\n- OCR show that expiry_date is always ulterior to issue_date (-1 if not).\n- OCR show that card is still valid base on expiry_date (-1 if not).\n- METADATA show that image was taken from a smartphone (-0.1 if not).\n- METADATA show that it is not a scanned document (-0.1 if not).\n- METADATA show that it is dated from currend date (-0.2 if not).\n- OCR AND METADATA show that it is not Ai generated (-1 if not).",
+                "hasOutputParser": true,
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 2.2,
+            "position": [1504, -336],
+            "id": "7577d23b-2db4-4b69-979b-3a1e9c703143",
+            "name": "AI Agent"
+        },
+        {
+            "parameters": {
+                "jsonSchemaExample": "{\n  \"trust\": \"0.5000\",\n  \"cause\": [\n    {\n      \"message\": \"Why this values 1\",\n      \"score\": 0\n    },\n    {\n      \"message\": \"Why this values 2\",\n      \"score\": -0.3\n    },\n    {\n      \"message\": \"Why this values 4\",\n      \"score\": -1\n    }\n  ]\n}",
+                "autoFix": true
+            },
+            "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+            "typeVersion": 1.3,
+            "position": [1664, -128],
+            "id": "02ac882a-a7c5-4598-ba10-fd2568b75812",
+            "name": "Structured Output Parser"
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "gpt-5",
+                    "mode": "list",
+                    "cachedResultName": "gpt-5"
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.2,
+            "position": [1456, -32],
+            "id": "03355c22-5a52-46ea-ba25-9b32a70923ed",
+            "name": "GPT-5",
+            "credentials": {
+                "openAiApi": {
+                    "id": "d1nusMjJ5jKyPtEq",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "073faa77-7bc2-486b-9de3-dbb66f25462a",
+                            "name": "message",
+                            "value": "={{ $json.message.content }}",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [672, 48],
+            "id": "b83bae8b-9118-4af9-90d3-308c9ee494b7",
+            "name": "Extract Message"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "286a3b14-eef7-43d6-97b7-63106330f1e2",
+                            "name": "metadata",
+                            "value": "={{$json}}",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [848, 272],
+            "id": "1bb5a78e-cc0a-45c2-b979-cdbbe74ab4aa",
+            "name": "Extract JSON Data"
+        },
+        {
+            "parameters": {
+                "operation": "information",
+                "dataPropertyName": "id_data"
+            },
+            "type": "n8n-nodes-base.editImage",
+            "typeVersion": 1,
+            "position": [672, 272],
+            "id": "a7e266fd-ee67-4d8c-86f9-0671ddc43042",
+            "name": "Extract Metadata"
+        },
+        {
+            "parameters": {
+                "mode": "combine",
+                "combineBy": "combineByPosition",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [720, 544],
+            "id": "c253bc44-59bb-44d7-8128-252113f3a92b",
+            "name": "Merge Image Binary",
+            "notesInFlow": false
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "gpt-5-mini",
+                    "mode": "list",
+                    "cachedResultName": "gpt-5-mini"
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.2,
+            "position": [1664, 64],
+            "id": "5e9cdf80-2734-4027-b765-ada88fb5ca1a",
+            "name": "GPT 5-mini",
+            "credentials": {
+                "openAiApi": {
+                    "id": "d1nusMjJ5jKyPtEq",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "mode": "combine",
+                "combineBy": "combineByPosition",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [1280, -336],
+            "id": "468e61b9-6132-41b2-9e53-240b851e9055",
+            "name": "Merge ID Data"
+        },
+        {
+            "parameters": {
+                "mode": "combine",
+                "combineBy": "combineByPosition",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [3040, 528],
+            "id": "327e6d01-d4ca-4114-b18a-dff3edb0faed",
+            "name": "Final Merge"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nlet jsonData = $input.first().json;\nconst result = {similaritySum: 1};\nfor (const item of jsonData.face_matches) {\n  result.similaritySum *= item.similarity;\n}\n\nreturn result;"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [2352, 544],
+            "id": "b03419c8-55ab-4e44-b41f-e00d0b229299",
+            "name": "Sum Similarity Score"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://compreface-fe.compreface.svc.cluster.local:80/api/v1/verification/verify",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "face_plugins",
+                            "value": "landmarks, gender, age, pose"
+                        }
+                    ]
+                },
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "x-api-key",
+                            "value": "8610e2ad-569f-4ac2-a424-db87e49909ab"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "contentType": "multipart-form-data",
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "parameterType": "formBinaryData",
+                            "name": "source_image",
+                            "inputDataFieldName": "self_data"
+                        },
+                        {
+                            "parameterType": "formBinaryData",
+                            "name": "target_image",
+                            "inputDataFieldName": "id_data"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [1392, 544],
+            "id": "e708a8e2-32dc-4694-bd6b-f4ee7a63e16a",
+            "name": "Send Images to Face Matching"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "7842c06b-160a-43d9-b06c-d724d0728bfc",
+                            "name": "face_matches",
+                            "value": "={{ $json.result[0].face_matches }}",
+                            "type": "array"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [1888, 544],
+            "id": "bd16acfd-bc35-4b3a-b713-a8eab16b6f9f",
+            "name": "Extract Face Matching Result"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "24766332-a991-45ef-a81e-0f6a3e3e5360",
+                            "name": "trust",
+                            "value": "={{ $json.output.trust }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "5268fae4-3d57-4841-874a-e131dd640be8",
+                            "name": "cause",
+                            "value": "={{ $json.output.cause }}",
+                            "type": "array"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [1856, -336],
+            "id": "f0c5cd44-f3dd-4ad6-909d-6a199d19ab51",
+            "name": "Extract LLM Analysis Result"
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Download Identity Image",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Download Selfie Image",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Clean OCR Result",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Download Selfie Image": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Image Binary",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Download Identity Image": {
+            "main": [
+                [
+                    {
+                        "node": "Extract Metadata",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Merge Image Binary",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Clean OCR Result": {
+            "main": [
+                [
+                    {
+                        "node": "Extract Message",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "Extract LLM Analysis Result",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Structured Output Parser": {
+            "ai_outputParser": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_outputParser",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "GPT-5": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract Message": {
+            "main": [
+                [
+                    {
+                        "node": "Merge ID Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract JSON Data": {
+            "main": [
+                [
+                    {
+                        "node": "Merge ID Data",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Extract Metadata": {
+            "main": [
+                [
+                    {
+                        "node": "Extract JSON Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Merge Image Binary": {
+            "main": [
+                [
+                    {
+                        "node": "Send Images to Face Matching",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "GPT 5-mini": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Structured Output Parser",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Merge ID Data": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Final Merge": {
+            "main": [
+                [
+                    {
+                        "node": "Send Result",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Sum Similarity Score": {
+            "main": [
+                [
+                    {
+                        "node": "Final Merge",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Send Images to Face Matching": {
+            "main": [
+                [
+                    {
+                        "node": "Extract Face Matching Result",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract Face Matching Result": {
+            "main": [
+                [
+                    {
+                        "node": "Sum Similarity Score",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract LLM Analysis Result": {
+            "main": [
+                [
+                    {
+                        "node": "Final Merge",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {
+        "Webhook": [
+            {
+                "email": "creator@example.com",
+                "password": "SecurePass123!",
+                "username": "creativeSoul",
+                "fullName": "Ima Cartholder",
+                "dateOfBirth": "1977-31-08",
+                "nationality": "USA",
+                "residenceCountry": "USA",
+                "hasMoreThanEighteen": true,
+                "hasOnlyEighteenPlusContent": true,
+                "hasConsentOfIndividualsFeatured": true,
+                "hasConsentToDataProcessing": true,
+                "hasAgreedToTerms": true,
+                "idDocumentFile": "https://upload.wikimedia.org/wikipedia/commons/7/79/Californian_sample_driver%27s_license%2C_c._2019.jpg",
+                "idDocumentOCR": "| H H DRIVER LICENSE California» LX i] i 5. 11234568 | C8580 <p : WR Exp 08/31/2014. END NONE 4 ul aft. $ E . E FNIMA 3 + 7) 2570 24TH STREET Fd = 1 3 k ANYTOWN, CA 95818 ZI OF ’ RSTRNON| 08311977 | vereran = a Cordis Glee Hot 5.05 Wor i251 Fee DD 00/00/0000NNNAN/ANFDIYY 08/31/2009",
+                "selfieWithIdDocumentFile": "https://i.postimg.cc/Qjz2GgfX/Screenshot-2025-09-14-193933.png?dl=1"
+            }
+        ]
+    },
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "0112b047b97b395ca7fedecedddf66eec86c608a85c4e2a8b9347ba86f7be020"
+    }
+}
